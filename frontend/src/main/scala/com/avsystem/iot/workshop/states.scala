@@ -6,6 +6,8 @@ sealed abstract class RoutingState(val parentState: RoutingState) extends State
 
 case object RootState extends RoutingState(null)
 
+case object DevicesState extends RoutingState(RootState)
+
 case object ErrorState extends RoutingState(RootState)
 
 case object IndexState extends RoutingState(RootState)

@@ -16,7 +16,7 @@ object RoutingRegistryDef extends RoutingRegistry[RoutingState] {
 
 
   private val (url2State, state2Url) = Bidirectional[String, RoutingState] {
-    case "" => IndexState
+    case "" => DevicesState
     case "/binding" => BindingDemoState("")
     case "/binding" /:/ arg => BindingDemoState(arg)
     case "/rpc" => RPCDemoState
