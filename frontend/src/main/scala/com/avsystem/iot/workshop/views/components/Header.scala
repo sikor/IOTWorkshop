@@ -8,6 +8,7 @@ import org.scalajs.dom.raw.Element
 import scalatags.JsDom.all._
 import scalacss.ScalatagsCss._
 import com.avsystem.iot.workshop.Context._
+import com.avsystem.iot.workshop.RoutingRegistryDef._
 
 object Header {
   private lazy val template = header(HeaderStyles.header)(

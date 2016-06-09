@@ -2,9 +2,7 @@ package com.avsystem.iot.workshop
 
 import io.udash._
 
-sealed abstract class RoutingState(val parentState: RoutingState) extends State {
-  def url(implicit application: Application[RoutingState]): String = s"#${application.matchState(this).value}"
-}
+sealed abstract class RoutingState(val parentState: RoutingState) extends State
 
 case object RootState extends RoutingState(null)
 

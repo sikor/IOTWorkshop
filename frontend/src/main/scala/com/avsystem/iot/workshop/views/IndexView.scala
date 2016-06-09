@@ -11,6 +11,7 @@ object IndexViewPresenter extends DefaultViewPresenterFactory[IndexState.type]((
 class IndexView extends View {
   import com.avsystem.iot.workshop.Context._
   import scalatags.JsDom.all._
+  import RoutingRegistryDef._
 
   private val content = div(
     h2("Thank you for choosing Udash! Take a look at following demo pages:"),
