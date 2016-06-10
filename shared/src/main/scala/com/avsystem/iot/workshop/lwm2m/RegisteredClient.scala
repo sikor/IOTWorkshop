@@ -3,6 +3,7 @@ package com.avsystem.iot.workshop.lwm2m
 import java.net.InetAddress
 import java.util.Date
 
+import com.avsystem.commons.misc.Opt
 import com.avsystem.commons.serialization.{GenCodec, Input, Output}
 
 object RegisteredClient {
@@ -12,3 +13,15 @@ object RegisteredClient {
 case class RegisteredClient(registrationDate: Date, address: String, port: Int, lifeTimeInSec: Long,
                             endpointName: String, registrationId: String, registrationAttributes: Map[String, String],
                             rootPath: String, lastUpdate: Date, objectLinks: Vector[String])
+
+object Lwm2mNode {
+  implicit val Codec: GenCodec[Lwm2mNode] = GenCodec.materialize[Lwm2mNode]
+}
+
+case class Lwm2mNode(path: String, value: Opt[String], attributes: Map[String, String])
+
+object ClientData {
+  implicit val Codec: GenCodec[ClientData] = GenCodec.materialize[ClientData]
+}
+
+case class ClientData(registration: RegisteredClient, datamodel: Vector[Lwm2mNode])

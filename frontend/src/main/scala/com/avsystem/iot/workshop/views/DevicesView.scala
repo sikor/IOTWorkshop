@@ -34,9 +34,11 @@ class DevicesView extends View {
     p(bind(statusProp)),
     produce(registeredClientsProp) { clients =>
       table(GlobalStyles.table)(
-        thead(tr(td("Endpoint name"), td("Address"), td("Port"))),
+        thead(tr(td("Endpoint name"), td("Address"), td("Port"), td("Registration Id"), td("Last update"),
+          td("Object links"), td("Life time [s]"))),
         tbody(clients.map { client =>
-          tr(td(client.endpointName), td(client.address.toString), td(client.port))
+          tr(td(client.endpointName), td(client.address.toString), td(client.port), td(client.registrationId),
+            td(client.lastUpdate.toString), td(client.objectLinks.mkString(", ")), td(client.lifeTimeInSec))
         })).render
     }
   ).render

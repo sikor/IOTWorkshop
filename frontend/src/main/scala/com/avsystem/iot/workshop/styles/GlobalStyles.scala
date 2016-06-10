@@ -298,4 +298,17 @@ object GlobalStyles extends StyleSheet.Inline {
   val table = style(
     addClassNames("table")
   )
+
+  val treeTableLvl0 = style(
+    paddingLeft(0 px).important
+  )
+
+  val treeTableLvl1 = style(
+    paddingLeft(10 px).important
+  )
+
+  val treeTableLvl2 = style(
+    paddingLeft(20 px).important
+  )
+
 }
