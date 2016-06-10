@@ -10,6 +10,16 @@ object Dependencies extends Build {
   val guavaVersion = "18.0"
   val slf4jVersion = "1.7.12"
 
+  val leshanDeps = Seq(
+    "org.eclipse.leshan" % "leshan-core" % "0.1.11-M10",
+    "org.eclipse.leshan" % "leshan-server-cf" % "0.1.11-M10",
+    "org.eclipse.leshan" % "leshan-server-core" % "0.1.11-M10"
+  )
+
+  val otherDeps = Seq(
+    "com.google.guava" % "guava" % guavaVersion
+  )
+
   val crossDeps = Def.setting(Seq[ModuleID](
     "io.udash" %%% "udash-core-shared" % udashVersion,
     "io.udash" %%% "udash-rpc-shared" % udashVersion
@@ -21,29 +31,19 @@ object Dependencies extends Build {
     "io.udash" %%% "udash-rpc-frontend" % udashVersion,
     "com.github.japgolly.scalacss" %%% "core" % "0.4.1",
     "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.4.1"
-  ))
+  ) ++ otherDeps)
 
   val frontendJSDeps = Def.setting(Seq[org.scalajs.sbtplugin.JSModuleID](
   ))
 
   val backendDeps = Def.setting(Seq[ModuleID](
     "ch.qos.logback" % "logback-classic" % logbackVersion,
+    "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.eclipse.jetty" % "jetty-server" % jettyVersion,
     "org.eclipse.jetty" % "jetty-servlet" % jettyVersion,
     "io.udash" %% "udash-rpc-backend" % udashVersion,
     "org.eclipse.jetty.websocket" % "websocket-server" % jettyVersion
-  ))
+  ) ++ leshanDeps ++ otherDeps)
 
-  val leshanDeps = Def.setting(Seq(
-    "org.eclipse.leshan" % "leshan-core" % "0.1.11-M10",
-    "org.eclipse.leshan" % "leshan-server-cf" % "0.1.11-M10",
-    "org.eclipse.leshan" % "leshan-server-core" % "0.1.11-M10"
-  ))
 
-  val otherDeps = Def.setting(Seq(
-    "com.avsystem.commons" % "commons-core" % avsCommonsVersion,
-    "com.google.guava" % "guava" % guavaVersion,
-    "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "ch.qos.logback" % "logback-classic" % logbackVersion
-  ))
 }

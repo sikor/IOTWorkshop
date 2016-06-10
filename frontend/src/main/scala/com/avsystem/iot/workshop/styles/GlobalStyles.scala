@@ -9,16 +9,17 @@ import scalacss.Attr
 import scalacss.Defaults._
 
 object GlobalStyles extends StyleSheet.Inline {
+
   import dsl._
 
   val reset = style(scalacss.ext.CssReset.meyer)
 
   val global = style(
-    unsafeRoot("#application") (
+    unsafeRoot("#application")(
       height(100 %%)
     ),
 
-    unsafeRoot("html") (
+    unsafeRoot("html")(
       UdashFonts.acumin(),
       position.relative,
       height(100 %%),
@@ -26,7 +27,7 @@ object GlobalStyles extends StyleSheet.Inline {
       overflowY.scroll
     ),
 
-    unsafeRoot("body") (
+    unsafeRoot("body")(
       position.relative,
       height(100 %%),
       fontSize(1.6 rem)
@@ -37,7 +38,7 @@ object GlobalStyles extends StyleSheet.Inline {
       fontSize(1.6 rem),
       lineHeight(1.3),
 
-      &.firstChild (
+      &.firstChild(
         marginTop(`0`)
       )
     ),
@@ -47,7 +48,7 @@ object GlobalStyles extends StyleSheet.Inline {
       lineHeight(1.3)
     ),
 
-    unsafeRoot("h1") (
+    unsafeRoot("h1")(
       position.relative,
       UdashFonts.acumin(FontWeight.SemiBold),
       paddingTop(7 rem),
@@ -55,7 +56,7 @@ object GlobalStyles extends StyleSheet.Inline {
       lineHeight(1.2),
       fontSize(4.8 rem),
 
-      &.after (
+      &.after(
         content := "\"\u2014\"",
         position.absolute,
         left(`0`),
@@ -70,7 +71,7 @@ object GlobalStyles extends StyleSheet.Inline {
       )
     ),
 
-    unsafeRoot("h2") (
+    unsafeRoot("h2")(
       UdashFonts.acumin(FontWeight.Regular),
       marginBottom(2 rem),
       lineHeight(1.2),
@@ -84,7 +85,7 @@ object GlobalStyles extends StyleSheet.Inline {
       )
     ),
 
-    unsafeRoot("h3") (
+    unsafeRoot("h3")(
       UdashFonts.acumin(FontWeight.ExtraLight),
       marginTop(4.5 rem),
       marginBottom(1.5 rem),
@@ -98,7 +99,7 @@ object GlobalStyles extends StyleSheet.Inline {
       )
     ),
 
-    unsafeRoot("h4") (
+    unsafeRoot("h4")(
       UdashFonts.acumin(FontWeight.ExtraLight),
       marginTop(3.5 rem),
       marginBottom(1.5 rem),
@@ -112,7 +113,7 @@ object GlobalStyles extends StyleSheet.Inline {
       )
     ),
 
-    unsafeRoot("blockquote") (
+    unsafeRoot("blockquote")(
       UdashFonts.acumin(FontWeight.ExtraLight, FontStyle.Italic),
       position.relative,
       margin(4 rem, `0`, 5 rem, 4.5 rem),
@@ -121,7 +122,7 @@ object GlobalStyles extends StyleSheet.Inline {
       color(StyleConstants.Colors.Grey),
 
       &.before(
-        StyleUtils.border(StyleConstants.Colors.Red, .3 rem),
+        StyleUtils.border(StyleConstants.Colors.Red,.3 rem),
         content := "\" \"",
         position.absolute,
         top(`0`),
@@ -136,7 +137,7 @@ object GlobalStyles extends StyleSheet.Inline {
       )
     ),
 
-    unsafeRoot("a") (
+    unsafeRoot("a")(
       textDecoration := "none",
       outline(`0`).important,
 
@@ -144,15 +145,15 @@ object GlobalStyles extends StyleSheet.Inline {
         textDecoration := "none"
       ),
 
-      &.hover (
+      &.hover(
         textDecoration := "none"
       ),
 
-      &.visited (
+      &.visited(
         color.inherit
       ),
 
-      &.hover (
+      &.hover(
         textDecoration := "underline"
       )
     ),
@@ -162,23 +163,23 @@ object GlobalStyles extends StyleSheet.Inline {
       height.auto
     ),
 
-    unsafeRoot("svg") (
+    unsafeRoot("svg")(
       display.block
     ),
 
-    unsafeRoot("object[type='image/svg+xml']") (
+    unsafeRoot("object[type='image/svg+xml']")(
       display.block,
       pointerEvents := "none"
     ),
 
-    unsafeRoot("input") (
+    unsafeRoot("input")(
       padding(.5 rem, 1 rem),
       borderWidth(1 px),
       borderStyle.solid,
       borderColor(c"#cccccc"),
       borderRadius(.3 rem),
 
-      &.focus (
+      &.focus(
         outline.none
       )
     ),
@@ -193,7 +194,7 @@ object GlobalStyles extends StyleSheet.Inline {
       margin(`0`)
     ),
 
-    unsafeRoot("textarea") (
+    unsafeRoot("textarea")(
       resize.none
     ),
 
@@ -210,26 +211,26 @@ object GlobalStyles extends StyleSheet.Inline {
       fontWeight._600
     ),
 
-    unsafeRoot("*") (
+    unsafeRoot("*")(
       boxSizing.borderBox,
 
-      &.before (
+      &.before(
         boxSizing.borderBox
       ),
 
-      &.after (
+      &.after(
         boxSizing.borderBox
       )
     )
   )
 
   val clearfix = style(
-    &.before (
+    &.before(
       content := "\" \"",
       display.table
     ),
 
-    &.after (
+    &.after(
       content := "\" \"",
       display.table,
       clear.both
@@ -292,5 +293,9 @@ object GlobalStyles extends StyleSheet.Inline {
 
   val grey = style(
     color(StyleConstants.Colors.Grey).important
+  )
+
+  val table = style(
+    addClassNames("table")
   )
 }

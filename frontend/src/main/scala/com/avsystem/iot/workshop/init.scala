@@ -10,20 +10,18 @@ import scala.scalajs.js.annotation.JSExport
 object Context {
   implicit val executionContext = scalajs.concurrent.JSExecutionContext.Implicits.queue
   private val routingRegistry = RoutingRegistryDef
-  private val viewPresenterRegistry = new StatesToViewPresenterDef
+  private val viewPresenterRegistry = StatesToViewPresenterDef
 
   implicit val applicationInstance = new Application[RoutingState](routingRegistry, viewPresenterRegistry, RootState)
 
   import io.udash.rpc._
   import com.avsystem.iot.workshop.rpc._
 
-  val serverRpc = DefaultServerRPC[MainClientRPC, MainServerRPC](new RPCService)
+  val serverRpc = DefaultServerRPC[MainClientRPC, MainServerRPC](new MainClientRPCImpl)
 
 }
 
 object Init extends JSApp with StrictLogging {
-
-  import Context._
 
   @JSExport
   override def main(): Unit = {
@@ -32,7 +30,7 @@ object Init extends JSApp with StrictLogging {
       if (appRoot.isEmpty) {
         logger.error("Application root element not found! Check your index.html file!")
       } else {
-        applicationInstance.run(appRoot.get)
+        Context.applicationInstance.run(appRoot.get)
 
         import scalacss.Defaults._
         import scalacss.ScalatagsCss._

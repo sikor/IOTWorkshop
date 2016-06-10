@@ -1,12 +1,12 @@
 package com.avsystem.iot.workshop.views
 
-import io.udash._
+import io.udash.{DefaultViewPresenterFactory, bindings, _}
 import com.avsystem.iot.workshop.RPCDemoState
 import org.scalajs.dom.Element
 import com.avsystem.iot.workshop.styles.DemoStyles
-import scalacss.ScalatagsCss._
 
-import scala.util.{Success, Failure}
+import scalacss.ScalatagsCss._
+import scala.util.{Failure, Success}
 
 case object RPCDemoViewPresenter extends DefaultViewPresenterFactory[RPCDemoState.type](() => {
   import com.avsystem.iot.workshop.Context._
@@ -34,7 +34,7 @@ class RPCDemoView(input: Property[String], serverResponse: Property[String]) ext
       i("com.avsystem.iot.workshop.views.RPCDemoView")
     ),
     h3("Example"),
-    TextInput(input, placeholder := "Type your name..."),
+    bindings.TextInput(input, placeholder := "Type your name..."),
     p("Server response: ", bind(serverResponse)),
     h3("Read more"),
     a(DemoStyles.underlineLinkBlack)(href := "http://guide.udash.io/#/rpc", target := "_blank")("Read more in Udash Guide.")

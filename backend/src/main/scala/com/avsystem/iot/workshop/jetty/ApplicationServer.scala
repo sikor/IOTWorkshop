@@ -1,5 +1,8 @@
 package com.avsystem.iot.workshop.jetty
 
+import com.avsystem.iot.workshop.rpc.MainServerRPC
+import io.udash.rpc.ClientId
+import io.udash.rpc.utils.DefaultAtmosphereFramework
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.handler.gzip.GzipHandler
 import org.eclipse.jetty.server.session.SessionHandler
@@ -7,7 +10,7 @@ import org.eclipse.jetty.servlet.{DefaultServlet, ServletContextHandler, Servlet
 
 import scala.concurrent.ExecutionContext
 
-class ApplicationServer(val port: Int, resourceBase: String) {
+class ApplicationServer(val port: Int, resourceBase: String, rpcProvider: ClientId => MainServerRPC) {
   private val server = new Server(port)
   private val contextHandler = new ServletContextHandler
 
@@ -31,7 +34,7 @@ class ApplicationServer(val port: Int, resourceBase: String) {
     import com.avsystem.iot.workshop.rpc._
     import io.udash.rpc._
 
-    val config = new DefaultAtmosphereServiceConfig[MainServerRPC]((clientId) => new DefaultExposesServerRPC[MainServerRPC](new ExposedRpcInterfaces()(clientId)))
+    val config = new DefaultAtmosphereServiceConfig((clientId) => new DefaultExposesServerRPC(rpcProvider(clientId)))
     val framework = new DefaultAtmosphereFramework(config)(ExecutionContext.Implicits.global)
 
     //Disabling all files scan during service auto-configuration,

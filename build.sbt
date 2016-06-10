@@ -46,7 +46,7 @@ lazy val backend = project.in(file("backend"))
     copyStatics := IO.copyDirectory((crossTarget in frontend).value / StaticFilesDir, (target in Compile).value / StaticFilesDir),
     copyStatics <<= copyStatics.dependsOn(compileStatics in frontend),
 
-    mappings in (Compile, packageBin) ++= {
+    mappings in(Compile, packageBin) ++= {
       copyStatics.value
       ((target in Compile).value / StaticFilesDir).***.get map { file =>
         file -> file.getAbsolutePath.stripPrefix((target in Compile).value.getAbsolutePath)
@@ -68,6 +68,8 @@ lazy val frontend = project.in(file("frontend")).enablePlugins(ScalaJSPlugin)
     compileStatics := {
       IO.copyDirectory(sourceDirectory.value / "main/assets/fonts", crossTarget.value / StaticFilesDir / WebContent / "assets/fonts")
       IO.copyDirectory(sourceDirectory.value / "main/assets/images", crossTarget.value / StaticFilesDir / WebContent / "assets/images")
+      IO.copyDirectory(sourceDirectory.value / "main/assets/js", crossTarget.value / StaticFilesDir / WebContent / "assets/js")
+      IO.copyDirectory(sourceDirectory.value / "main/assets/styles", crossTarget.value / StaticFilesDir / WebContent / "assets/styles")
       compileStaticsForRelease.value
       (crossTarget.value / StaticFilesDir).***.get
     },

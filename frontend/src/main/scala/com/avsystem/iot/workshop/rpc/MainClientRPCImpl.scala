@@ -1,6 +1,6 @@
 package com.avsystem.iot.workshop.rpc
 
-class RPCService extends MainClientRPC {
+class MainClientRPCImpl extends MainClientRPC {
   override def push(number: Int): Unit =
     println(s"Push from server: $number")
 }
