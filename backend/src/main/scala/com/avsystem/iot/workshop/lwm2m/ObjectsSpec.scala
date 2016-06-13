@@ -1,4 +1,5 @@
-package com.avsystem.iot.workshop.lwm2m
+package com.avsystem.iot.workshop
+package lwm2m
 
 import java.nio.channels.Channels
 
@@ -16,10 +17,18 @@ object ObjectsSpec {
   case class ObjectSpec(name: String, id: Int, mandatory: Boolean, instancetype: String, description: String,
                         resourcedefs: Vector[ResourceSpec]) {
     val resourcesMap = resourcedefs.map(r => (r.id, r)).toMap
+
+    def toDetails: DMNodeDetails = {
+      DMNodeDetails(name.opt, description.opt)
+    }
   }
 
   case class ResourceSpec(name: String, id: Int, mandatory: Boolean, instancetype: String, description: String,
-                          `type`: String, range: String, units: String, operations: String)
+                          `type`: String, range: String, units: String, operations: String) {
+
+    def toDetails: DMNodeDetails = DMNodeDetails(name.opt, description.opt, operations.opt, units.opt, `type`.opt)
+  }
+
 }
 
 class ObjectsSpec(resources: Vector[String]) {
@@ -35,6 +44,14 @@ class ObjectsSpec(resources: Vector[String]) {
       case Array(a) => dictionary(a.toInt).name
       case Array(a, b) => b
       case Array(a, b, c) => dictionary(a.toInt).resourcesMap(c.toInt).name
+    }
+  }
+
+  def getDeatils(path: String): DMNodeDetails = {
+    splitPath(path) match {
+      case Array(a) => dictionary(a.toInt).toDetails
+      case Array(a, b) => DMNodeDetails.Empty
+      case Array(a, b, c) => dictionary(a.toInt).resourcesMap(c.toInt).toDetails
     }
   }
 

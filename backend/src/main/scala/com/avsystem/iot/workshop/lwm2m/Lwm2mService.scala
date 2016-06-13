@@ -71,7 +71,7 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
           for {
             discoverResponse <- server.sendFut(client, new DiscoverRequest(objUrl))
             discoveredUrlsMap = discoverResponse.getObjectLinks.map(ol => (ol.getUrl, Lwm2mDMNode(ol.getUrl, Opt.Empty,
-              ol.getAttributes.asScala.mapValues(_.toString).toMap))).toMap
+              ol.getAttributes.asScala.mapValues(_.toString).toMap, objectsSpec.getDeatils(ol.getUrl)))).toMap
             _ = Logger.trace("Discover urls: " + discoveredUrlsMap.values.toString)
             readValueResponse <- server.sendFut(client, new ReadRequest(objUrl))
             updatedMap = readValueResponse.getContent match {
@@ -111,7 +111,9 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
         resource.getValue.toString
       }
       val url = s"$objInstanceUrl/${resource.getId}"
-      map + (url -> map.get(url).map(_.copy(value = value.opt)).getOrElse(Lwm2mDMNode(url, value.opt, Map.empty)))
+      map + (url -> map.get(url)
+        .map(_.copy(value = value.opt))
+        .getOrElse(Lwm2mDMNode(url, value.opt, Map.empty, objectsSpec.getDeatils(url))))
     }
   }
 

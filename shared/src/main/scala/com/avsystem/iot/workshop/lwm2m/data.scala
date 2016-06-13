@@ -1,27 +1,34 @@
 package com.avsystem.iot.workshop.lwm2m
 
-import java.net.InetAddress
 import java.util.Date
 
 import com.avsystem.commons.misc.Opt
-import com.avsystem.commons.serialization.{GenCodec, Input, Output}
+import com.avsystem.commons.serialization.GenCodec
 
 object RegisteredClient {
   implicit val Codec: GenCodec[RegisteredClient] = GenCodec.materialize[RegisteredClient]
 }
+
 case class RegisteredClient(registrationDate: Date, address: String, port: Int, lifeTimeInSec: Long,
                             endpointName: String, registrationId: String, registrationAttributes: Map[String, String],
                             rootPath: String, lastUpdate: Date, objectLinks: Vector[String])
 
-case class DMNodeDetails()
+object DMNodeDetails {
+  val Empty = DMNodeDetails()
+  implicit val Codec: GenCodec[DMNodeDetails] = GenCodec.materialize[DMNodeDetails]
+}
 
+case class DMNodeDetails(name: Opt[String] = Opt.Empty, description: Opt[String] = Opt.Empty, operations: Opt[String] = Opt.Empty,
+                         units: Opt[String] = Opt.Empty, `type`: Opt[String] = Opt.Empty)
 
 object Lwm2mDMNode {
   implicit val Codec: GenCodec[Lwm2mDMNode] = GenCodec.materialize[Lwm2mDMNode]
 }
-case class Lwm2mDMNode(path: String, value: Opt[String], attributes: Map[String, String])
+
+case class Lwm2mDMNode(path: String, value: Opt[String], attributes: Map[String, String], details: DMNodeDetails)
 
 object ClientData {
   implicit val Codec: GenCodec[ClientData] = GenCodec.materialize[ClientData]
 }
+
 case class ClientData(registration: RegisteredClient, datamodel: Vector[Lwm2mDMNode])

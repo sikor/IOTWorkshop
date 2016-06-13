@@ -5,9 +5,11 @@ import com.avsystem.iot.workshop.styles.GlobalStyles
 import com.avsystem.iot.workshop.{DeviceInstanceState, DevicesState, RoutingRegistryDef}
 import io.udash._
 import io.udash.core.DefaultViewPresenterFactory
+import io.udash.properties.SeqProperty
 import org.scalajs.dom.Element
 
 import scala.util.{Failure, Success}
+import scalatags.JsDom
 
 case class DeviceInstanceViewPresenter(endpointName: String)
   extends DefaultViewPresenterFactory[DeviceInstanceState](() => new DeviceInstanceView(endpointName))
@@ -48,20 +50,26 @@ class DeviceInstanceView(endpointName: String) extends View {
     p(bind(statusProp)),
     produce(datamodelProp)(datamodel =>
       table(GlobalStyles.table)(
-        thead(td("Path"), td("Value"), td("Attributes")),
+        thead(td("Path"), td("Value"), td("Type"), td("Operations"), td("Attributes")),
         tbody(datamodel.map(node =>
           tr(
-            td(nested(node.path))(node.path),
-            td(node.value.getOrElse("").toString),
-            td(if (node.attributes.isEmpty) {
-              ""
-            } else {
-              node.attributes.toString
-            })
+            td(nested(node.path))(node.details.name.map(name => s"$name (${node.path})").getOrElse(node.path).toString),
+            td(node.value.getOrElse("").toString + node.details.units.filter(_ != "").map(u => s" [$u]").getOrElse("")),
+            td(node.details.`type`.getOrElse("").toString),
+            td(node.details.operations.getOrElse("").toString),
+            td(attributesTag(node))
           )
         ))).render
     )
   ).render
+
+  private def attributesTag(node: Lwm2mDMNode): JsDom.StringFrag = {
+    if (node.attributes.isEmpty) {
+      ""
+    } else {
+      node.attributes.toString
+    }
+  }
 
   override def getTemplate: Element = content
 
