@@ -14,14 +14,14 @@ case class RegisteredClient(registrationDate: Date, address: String, port: Int, 
                             endpointName: String, registrationId: String, registrationAttributes: Map[String, String],
                             rootPath: String, lastUpdate: Date, objectLinks: Vector[String])
 
-object Lwm2mNode {
-  implicit val Codec: GenCodec[Lwm2mNode] = GenCodec.materialize[Lwm2mNode]
+object Lwm2mDMNode {
+  implicit val Codec: GenCodec[Lwm2mDMNode] = GenCodec.materialize[Lwm2mDMNode]
 }
 
-case class Lwm2mNode(path: String, value: Opt[String], attributes: Map[String, String])
+case class Lwm2mDMNode(path: String, value: Opt[String], attributes: Map[String, String])
 
 object ClientData {
   implicit val Codec: GenCodec[ClientData] = GenCodec.materialize[ClientData]
 }
 
-case class ClientData(registration: RegisteredClient, datamodel: Vector[Lwm2mNode])
+case class ClientData(registration: RegisteredClient, datamodel: Vector[Lwm2mDMNode])

@@ -1,6 +1,6 @@
 package com.avsystem.iot.workshop.rpc
 
-import com.avsystem.iot.workshop.lwm2m.{ClientData, Lwm2mNode, Lwm2mService, RegisteredClient}
+import com.avsystem.iot.workshop.lwm2m.{ClientData, Lwm2mService, RegisteredClient}
 
 import scala.concurrent.Future
 

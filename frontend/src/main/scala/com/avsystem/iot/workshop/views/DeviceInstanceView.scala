@@ -1,6 +1,6 @@
 package com.avsystem.iot.workshop.views
 
-import com.avsystem.iot.workshop.lwm2m.Lwm2mNode
+import com.avsystem.iot.workshop.lwm2m.Lwm2mDMNode
 import com.avsystem.iot.workshop.styles.GlobalStyles
 import com.avsystem.iot.workshop.{DeviceInstanceState, DevicesState, RoutingRegistryDef}
 import io.udash._
@@ -21,7 +21,7 @@ class DeviceInstanceView(endpointName: String) extends View {
 
   val clientData = serverRpc.getLwm2mRPC.retrieveClientData(endpointName)
   val statusProp = Property[String]("Retrieving data")
-  val datamodelProp = SeqProperty[Lwm2mNode](Seq())
+  val datamodelProp = SeqProperty[Lwm2mDMNode](Seq())
 
 
   clientData.onComplete {

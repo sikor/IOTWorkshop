@@ -37,8 +37,15 @@ class DevicesView extends View {
         thead(tr(td("Endpoint name"), td("Address"), td("Port"), td("Registration Id"), td("Last update"),
           td("Object links"), td("Life time [s]"))),
         tbody(clients.map { client =>
-          tr(td(client.endpointName), td(client.address.toString), td(client.port), td(client.registrationId),
-            td(client.lastUpdate.toString), td(client.objectLinks.mkString(", ")), td(client.lifeTimeInSec))
+          tr(
+            td(a(DemoStyles.underlineLinkBlack)(href := DeviceInstanceState(client.endpointName).url)(client.endpointName)),
+            td(client.address.toString),
+            td(client.port),
+            td(client.registrationId),
+            td(client.lastUpdate.toString),
+            td(client.objectLinks.mkString(", ")),
+            td(client.lifeTimeInSec)
+          )
         })).render
     }
   ).render
