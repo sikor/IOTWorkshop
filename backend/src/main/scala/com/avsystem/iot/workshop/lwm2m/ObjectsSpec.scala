@@ -4,6 +4,7 @@ package lwm2m
 import java.nio.channels.Channels
 
 import com.avsystem.commons.serialization.GenCodec
+import com.avsystem.iot.workshop.lwm2m.LmPathUtils.LmPath
 import com.avsystem.iot.workshop.lwm2m.ObjectsSpec.ObjectSpec
 import io.udash.rpc.serialization.JsonInput
 import io.udash.rpc.serialization.jawn.JawnFacade
@@ -39,23 +40,20 @@ class ObjectsSpec(resources: Vector[String]) {
     GenCodec.read[Vector[ObjectSpec]](input)
   }.map(objectSpec => (objectSpec.id, objectSpec)).toMap
 
-  def suffixToHumanReadable(path: String): String = {
-    splitPath(path) match {
+  def suffixToHumanReadable(path: LmPath): String = {
+    path.split match {
       case Array(a) => dictionary(a.toInt).name
       case Array(a, b) => b
       case Array(a, b, c) => dictionary(a.toInt).resourcesMap(c.toInt).name
     }
   }
 
-  def getDeatils(path: String): DMNodeDetails = {
-    splitPath(path) match {
+  def getDetails(path: LmPath): DMNodeDetails = {
+    path.split match {
       case Array(a) => dictionary(a.toInt).toDetails
       case Array(a, b) => DMNodeDetails.Empty
       case Array(a, b, c) => dictionary(a.toInt).resourcesMap(c.toInt).toDetails
     }
   }
 
-  private def splitPath(path: String): Array[String] = {
-    path.stripPrefix("/").stripSuffix("/").split('/')
-  }
 }

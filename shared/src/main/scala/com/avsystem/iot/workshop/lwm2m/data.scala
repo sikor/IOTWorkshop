@@ -25,7 +25,19 @@ object Lwm2mDMNode {
   implicit val Codec: GenCodec[Lwm2mDMNode] = GenCodec.materialize[Lwm2mDMNode]
 }
 
-case class Lwm2mDMNode(path: String, value: Opt[String], attributes: Map[String, String], details: DMNodeDetails)
+trait Lwm2mDMNodeTemplate {
+  def path: String
+
+  def value: Opt[String]
+
+  def attributesSeq: Seq[(String, String)]
+
+  def details: DMNodeDetails
+}
+
+case class Lwm2mDMNode(path: String, value: Opt[String], attributes: Map[String, String], details: DMNodeDetails) extends Lwm2mDMNodeTemplate {
+  override def attributesSeq: Seq[(String, String)] = attributes.toSeq
+}
 
 object ClientData {
   implicit val Codec: GenCodec[ClientData] = GenCodec.materialize[ClientData]

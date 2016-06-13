@@ -1,12 +1,16 @@
 package com.avsystem.iot.workshop
 package lwm2m
 
+import java.nio.charset.Charset
+import java.util.Date
+
 import com.avsystem.commons.concurrent.RunInQueueEC
 import com.avsystem.commons.jiop.BasicJavaInterop._
 import com.avsystem.commons.misc.Opt
+import com.avsystem.iot.workshop.lwm2m.LmPathUtils.LmPath
 import com.avsystem.iot.workshop.lwm2m.Lwm2mService._
-import org.eclipse.leshan.core.node.{LwM2mObject, LwM2mObjectInstance}
-import org.eclipse.leshan.core.request.{DiscoverRequest, DownlinkRequest, ReadRequest}
+import org.eclipse.leshan.core.node.{LwM2mNode, LwM2mObject, LwM2mObjectInstance, LwM2mSingleResource}
+import org.eclipse.leshan.core.request._
 import org.eclipse.leshan.core.response._
 import org.eclipse.leshan.server.californium.LeshanServerBuilder
 import org.eclipse.leshan.server.californium.impl.LeshanServer
@@ -71,7 +75,7 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
           for {
             discoverResponse <- server.sendFut(client, new DiscoverRequest(objUrl))
             discoveredUrlsMap = discoverResponse.getObjectLinks.map(ol => (ol.getUrl, Lwm2mDMNode(ol.getUrl, Opt.Empty,
-              ol.getAttributes.asScala.mapValues(_.toString).toMap, objectsSpec.getDeatils(ol.getUrl)))).toMap
+              ol.getAttributes.asScala.mapValues(_.toString).toMap, objectsSpec.getDetails(ol.getUrl.lmPath)))).toMap
             _ = Logger.trace("Discover urls: " + discoveredUrlsMap.values.toString)
             readValueResponse <- server.sendFut(client, new ReadRequest(objUrl))
             updatedMap = readValueResponse.getContent match {
@@ -102,6 +106,14 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
     }.getOrElse(Future.failed(new IllegalArgumentException(s"Endpoint not registered: $endpointName")))
   }
 
+  def write(endpointName: String, path: LmPath, value: String): Future[Unit] = {
+    server.getClientRegistry.get(endpointName).opt.map { client: Client =>
+      val request = new WriteRequest(WriteRequest.Mode.REPLACE, ContentFormat.TLV, path.toUrl, toLwm2mNode(path, value))
+      Logger.debug(s"Write: ($endpointName, $path, $value)")
+      server.sendFut(client, request).filter(_.isSuccess).toUnit
+    }.getOrElse(Future.failed(new IllegalArgumentException(s"Endpoint not registered: $endpointName")))
+  }
+
   private def handleObjectInstance(objId: Int, discoveredUrlsMap: Map[String, Lwm2mDMNode], objInstace: LwM2mObjectInstance): Map[String, Lwm2mDMNode] = {
     val objInstanceUrl: String = s"/$objId/${objInstace.getId}"
     objInstace.getResources.asScala.values.foldLeft(discoveredUrlsMap) { (map, resource) =>
@@ -113,7 +125,20 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
       val url = s"$objInstanceUrl/${resource.getId}"
       map + (url -> map.get(url)
         .map(_.copy(value = value.opt))
-        .getOrElse(Lwm2mDMNode(url, value.opt, Map.empty, objectsSpec.getDeatils(url))))
+        .getOrElse(Lwm2mDMNode(url, value.opt, Map.empty, objectsSpec.getDetails(url.lmPath))))
+    }
+  }
+
+  private def toLwm2mNode(path: LmPath, value: String): LwM2mNode = {
+    val details: DMNodeDetails = objectsSpec.getDetails(path)
+    val id = path.resourceId
+    details.`type`.getOrElse("string") match {
+      case "string" => LwM2mSingleResource.newStringResource(id, value)
+      case "boolean" => LwM2mSingleResource.newBooleanResource(id, value.toBoolean)
+      case "integer" => LwM2mSingleResource.newIntegerResource(id, value.toInt)
+      case "float" => LwM2mSingleResource.newFloatResource(id, value.toInt)
+      case "time" => LwM2mSingleResource.newDateResource(id, new Date(value.toLong))
+      case "opaque" => LwM2mSingleResource.newBinaryResource(id, value.getBytes(Charset.forName("UTF-8")))
     }
   }
 

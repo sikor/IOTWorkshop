@@ -10,4 +10,6 @@ trait Lwm2mRPC {
   def retrieveRegisteredClients(): Future[Vector[RegisteredClient]]
 
   def retrieveClientData(endpointName: String): Future[ClientData]
+
+  def write(endpointName: String, path: String, value: String): Future[Unit]
 }
