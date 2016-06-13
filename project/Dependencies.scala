@@ -9,6 +9,7 @@ object Dependencies extends Build {
   val avsCommonsVersion = "1.10.6"
   val guavaVersion = "18.0"
   val slf4jVersion = "1.7.12"
+  val scalatestVersion = "2.2.5"
 
   val leshanDeps = Seq(
     "org.eclipse.leshan" % "leshan-core" % "0.1.11-M10",
@@ -42,7 +43,8 @@ object Dependencies extends Build {
     "org.eclipse.jetty" % "jetty-server" % jettyVersion,
     "org.eclipse.jetty" % "jetty-servlet" % jettyVersion,
     "io.udash" %% "udash-rpc-backend" % udashVersion,
-    "org.eclipse.jetty.websocket" % "websocket-server" % jettyVersion
+    "org.eclipse.jetty.websocket" % "websocket-server" % jettyVersion,
+    "org.scalatest" %% "scalatest" % scalatestVersion % Test
   ) ++ leshanDeps ++ otherDeps)
 
 

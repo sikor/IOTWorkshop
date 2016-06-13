@@ -10,6 +10,7 @@
     </appender>
 
     <logger name="com.avsystem.iot.workshop" level="DEBUG"/>
+    <logger name="com.avsystem.iot.workshop.lwm2m.Lwm2mService" level="TRACE"/>
 
     <root level="WARN">
         <appender-ref ref="STDOUT"/>

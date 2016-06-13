@@ -47,6 +47,7 @@ object Lwm2mService {
 
 class Lwm2mService(val bindHostname: String, val bindPort: Int) {
 
+  val objectsSpec = new ObjectsSpec(Vector("/oma-objects-spec.json", "/custom-objects-spec.json"))
   val builder: LeshanServerBuilder = new LeshanServerBuilder
   builder.setLocalAddress(bindHostname, bindPort)
   val server: LeshanServer = builder.build()
@@ -68,9 +69,10 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
           val objId = pattern.findFirstIn(url).get.toInt
           val objUrl: String = s"/$objId"
           for {
-            discoverResponse <- server.sendFut(client, new DiscoverRequest(url))
+            discoverResponse <- server.sendFut(client, new DiscoverRequest(objUrl))
             discoveredUrlsMap = discoverResponse.getObjectLinks.map(ol => (ol.getUrl, Lwm2mDMNode(ol.getUrl, Opt.Empty,
-              ol.getAttributes.asScala.mapValues(_.toString).toMap))).toMap + (objUrl -> Lwm2mDMNode(objUrl, Opt.Empty, Map.empty))
+              ol.getAttributes.asScala.mapValues(_.toString).toMap))).toMap
+            _ = Logger.trace("Discover urls: " + discoveredUrlsMap.values.toString)
             readValueResponse <- server.sendFut(client, new ReadRequest(objUrl))
             updatedMap = readValueResponse.getContent match {
               case obj: LwM2mObject =>
@@ -81,7 +83,9 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
                 handleObjectInstance(objId, discoveredUrlsMap, objInstance)
               case _ => throw new IllegalStateException(s"Unexpected content: ${readValueResponse.getContent}")
             }
-          } yield updatedMap.values.toVector
+          } yield {
+            updatedMap.values.toVector
+          }
         } else {
           Future.successful(Vector.empty)
         }
@@ -99,13 +103,14 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
   }
 
   private def handleObjectInstance(objId: Int, discoveredUrlsMap: Map[String, Lwm2mDMNode], objInstace: LwM2mObjectInstance): Map[String, Lwm2mDMNode] = {
+    val objInstanceUrl: String = s"/$objId/${objInstace.getId}"
     objInstace.getResources.asScala.values.foldLeft(discoveredUrlsMap) { (map, resource) =>
       val value = if (resource.isMultiInstances) {
         resource.getValues.values().asScala.toString
       } else {
         resource.getValue.toString
       }
-      val url = s"/$objId/${objInstace.getId}/${resource.getId}"
+      val url = s"$objInstanceUrl/${resource.getId}"
       map + (url -> map.get(url).map(_.copy(value = value.opt)).getOrElse(Lwm2mDMNode(url, value.opt, Map.empty)))
     }
   }
