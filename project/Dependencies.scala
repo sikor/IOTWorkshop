@@ -18,7 +18,8 @@ object Dependencies extends Build {
   )
 
   val otherDeps = Seq(
-    "com.google.guava" % "guava" % guavaVersion
+    "com.google.guava" % "guava" % guavaVersion,
+    "com.google.code.findbugs" % "jsr305" % "1.3.+"
   )
 
   val crossDeps = Def.setting(Seq[ModuleID](

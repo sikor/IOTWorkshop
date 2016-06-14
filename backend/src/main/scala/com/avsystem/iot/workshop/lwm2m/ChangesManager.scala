@@ -12,7 +12,6 @@ import com.avsystem.iot.workshop.lwm2m.ChangesManager.Listener
 import org.eclipse.leshan.server.LwM2mServer
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 object ChangesManager {
@@ -103,13 +102,7 @@ class ChangesManager(private val server: LwM2mServer) extends ObservationRegistr
             }.toVector
         }
         if (update.nonEmpty) {
-          listeners.foreach { listener =>
-            try {
-              listener.onUpdate(update)
-            } catch {
-              case NonFatal(e) => Logger.error("Failed to notify listener", e)
-            }
-          }
+          notifyListeners(listeners, update)
         }
       }
     }
@@ -120,11 +113,7 @@ class ChangesManager(private val server: LwM2mServer) extends ObservationRegistr
     withListeners(observation) { listeners =>
       val update = NodeUpdate(observation.getPath.toString, value.opt, Opt.Empty)
       listeners.foreach { listener =>
-        try {
-          listener.onUpdate(Vector(update))
-        } catch {
-          case NonFatal(e) => Logger.error("Failed to notify listener", e)
-        }
+        notifyListener(Vector(update), listener)
       }
     }
   }
@@ -133,6 +122,31 @@ class ChangesManager(private val server: LwM2mServer) extends ObservationRegistr
     val client = server.getClientRegistry.findByRegistrationId(observation.getRegistrationId)
     listeners.get(client.getEndpoint).opt.foreach { listeners =>
       onListeners(listeners.asScala)
+    }
+  }
+
+  private def notifyListeners(listeners: Iterable[Listener], update: Vector[NodeUpdate]): Unit = {
+    val buff = List.newBuilder[Listener]
+    listeners.foreach { listener =>
+      if (!notifyListener(update, listener)) {
+        buff.+=(listener)
+      }
+    }
+    val toRemoveListeners: List[Listener] = buff.result()
+    toRemoveListeners.foreach(cancelListener(_))
+    if (toRemoveListeners.nonEmpty) {
+      Logger.warn(s"Listeners removed: $toRemoveListeners")
+    }
+  }
+
+  private def notifyListener(update: Vector[NodeUpdate], listener: Listener): Boolean = {
+    try {
+      listener.onUpdate(update)
+      true
+    } catch {
+      case NonFatal(e) =>
+        Logger.error(s"Failed to notify listener: $listener, ${e.getMessage}")
+        false
     }
   }
 }

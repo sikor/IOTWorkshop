@@ -13,7 +13,13 @@ scalacOptions in ThisBuild ++= Seq(
   "-language:dynamics",
   "-Xfuture",
   "-Xfatal-warnings",
-  "-Xlint:_,-missing-interpolator,-adapted-args"
+  "-Xlint:_,-missing-interpolator,-adapted-args",
+  "-target:jvm-1.8"
+)
+javacOptions in ThisBuild := Seq(
+  "-source", "1.8",
+  "-target", "1.8",
+  "-parameters"
 )
 
 def crossLibs(configuration: Configuration) =
