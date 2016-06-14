@@ -1,5 +1,58 @@
 [
   {
+    "name": "raspi",
+    "id": 31337,
+    "instancetype": "single",
+    "mandatory": false,
+    "description": "Raspberry pi custom support",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "LED",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "boolean",
+        "range": "",
+        "units": "",
+        "description": "LED on/off"
+      },
+      {
+        "id": 1,
+        "name": "Button",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "boolean",
+        "range": "",
+        "units": "",
+        "description": "Whether button is pushed"
+      },
+      {
+        "id": 2,
+        "name": "Default Route",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": "IP of the gateway"
+      },
+      {
+        "id": 3,
+        "name": "WLAN IP",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": "IP of the WLAN interface"
+      }
+    ]
+  },
+  {
     "name": "LWM2M Security",
     "id": 0,
     "instancetype": "multiple",

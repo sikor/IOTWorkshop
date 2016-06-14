@@ -11,6 +11,7 @@ import com.avsystem.commons.misc.Opt
 import com.avsystem.iot.workshop.lwm2m.ChangesManager.Listener
 import com.avsystem.iot.workshop.lwm2m.LmPathUtils.LmPath
 import com.avsystem.iot.workshop.lwm2m.Lwm2mService._
+import org.eclipse.leshan.core.model.ResourceModel
 import org.eclipse.leshan.core.node.{LwM2mNode, LwM2mObject, LwM2mObjectInstance, LwM2mSingleResource}
 import org.eclipse.leshan.core.request._
 import org.eclipse.leshan.core.response._
@@ -157,7 +158,10 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
       val value = if (resource.isMultiInstances) {
         resource.getValues.values().asScala.toVector.toString
       } else {
-        resource.getValue.toString
+        resource.getType match {
+          case ResourceModel.Type.OPAQUE => resource.getValue.asInstanceOf[Array[Byte]].toVector.toString
+          case _ => resource.getValue.toString
+        }
       }
       val url = s"$objInstanceUrl/${resource.getId}"
       map + (url -> map.get(url)
