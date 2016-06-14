@@ -13,7 +13,7 @@ class MainServerRPCImpl(lwm2mService: Lwm2mService)(implicit clientId: ClientId)
   override def pushMe(): Unit =
     ClientRPC(clientId).push(42)
 
-  override val getLwm2mRPC: Lwm2mRPCImpl = new Lwm2mRPCImpl(lwm2mService)
+  override val getLwm2mRPC: Lwm2mRPCImpl = new Lwm2mRPCImpl(lwm2mService, clientId)
 }
 
        

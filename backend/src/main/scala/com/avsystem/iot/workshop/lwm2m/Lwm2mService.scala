@@ -7,6 +7,7 @@ import java.util.Date
 import com.avsystem.commons.concurrent.RunInQueueEC
 import com.avsystem.commons.jiop.BasicJavaInterop._
 import com.avsystem.commons.misc.Opt
+import com.avsystem.iot.workshop.lwm2m.ChangesManager.Listener
 import com.avsystem.iot.workshop.lwm2m.LmPathUtils.LmPath
 import com.avsystem.iot.workshop.lwm2m.Lwm2mService._
 import org.eclipse.leshan.core.node.{LwM2mNode, LwM2mObject, LwM2mObjectInstance, LwM2mSingleResource}
@@ -56,7 +57,7 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
   builder.setLocalAddress(bindHostname, bindPort)
   val server: LeshanServer = builder.build()
   server.start()
-
+  val changesManager = new ChangesManager(server)
   Logger.info(s"Lwm2m Service started: $this")
 
   def retrieveAllRegisteredClients(): Vector[RegisteredClient] = {
@@ -65,7 +66,9 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
   }
 
   def retrieveClientData(endpointName: String): Future[ClientData] = {
-    server.getClientRegistry.get(endpointName).opt.map { client: Client =>
+    withClient(endpointName) { client: Client =>
+      val observations = server.getObservationRegistry.getObservations(client)
+      val observationsMap = observations.asScala.map(ob => (ob.getPath.toString, ob)).toMap
       val dataForObjects: Array[Future[Vector[Lwm2mDMNode]]] = client.getObjectLinks.map { linkObject =>
         val url = linkObject.getUrl
         if (url.length > 1) {
@@ -75,7 +78,7 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
           for {
             discoverResponse <- server.sendFut(client, new DiscoverRequest(objUrl))
             discoveredUrlsMap = discoverResponse.getObjectLinks.map(ol => (ol.getUrl, Lwm2mDMNode(ol.getUrl, Opt.Empty,
-              ol.getAttributes.asScala.mapValues(_.toString).toMap, objectsSpec.getDetails(ol.getUrl.lmPath)))).toMap
+              ol.getAttributes.asScala.mapValues(_.toString).toMap, objectsSpec.getDetails(ol.getUrl.lmPath), observationsMap.contains(ol.getUrl)))).toMap
             _ = Logger.trace("Discover urls: " + discoveredUrlsMap.values.toString)
             readValueResponse <- server.sendFut(client, new ReadRequest(objUrl))
             updatedMap = readValueResponse.getContent match {
@@ -103,15 +106,45 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
           }
         }
       datamodelFut.map(dm => ClientData(client.toRegisteredClient, dm.sortBy(n => n.path)))
-    }.getOrElse(Future.failed(new IllegalArgumentException(s"Endpoint not registered: $endpointName")))
+    }
   }
 
   def write(endpointName: String, path: LmPath, value: String): Future[Unit] = {
-    server.getClientRegistry.get(endpointName).opt.map { client: Client =>
+    withClient(endpointName) { client: Client =>
       val request = new WriteRequest(WriteRequest.Mode.REPLACE, ContentFormat.TLV, path.toUrl, toLwm2mNode(path, value))
       Logger.debug(s"Write: ($endpointName, $path, $value)")
       server.sendFut(client, request).filter(_.isSuccess).toUnit
-    }.getOrElse(Future.failed(new IllegalArgumentException(s"Endpoint not registered: $endpointName")))
+    }
+  }
+
+  def observe(endpointName: String, path: LmPath): Future[Unit] = {
+    withClient(endpointName) { client: Client =>
+      val request = new ObserveRequest(path.toUrl)
+      Logger.debug(s"Observe: ${path.toUrl}")
+      val observeResponse: Future[ObserveResponse] = server.sendFut(client, request)
+      observeResponse.filter(_.isSuccess).toUnit
+    }
+  }
+
+  def cancelObserve(endpointName: String, path: LmPath): Future[Unit] = {
+    withClient(endpointName) { client: Client =>
+      Logger.debug(s"Observe cancel: ${path.toUrl}")
+      server.getObservationRegistry.cancelObservation(client, path.toUrl)
+      Future.successful(())
+    }
+  }
+
+  def listenForChanges(listener: Listener): Unit = {
+    changesManager.listenForChanges(listener)
+  }
+
+  def cancelListener(listener: Listener): Unit = {
+    changesManager.cancelListener(listener)
+  }
+
+  private def withClient[R](endpointName: String)(fun: Client => Future[R]): Future[R] = {
+    server.getClientRegistry.get(endpointName).opt.map(client => fun(client))
+      .getOrElse(Future.failed(new IllegalArgumentException(s"Endpoint not registered: $endpointName")))
   }
 
   private def handleObjectInstance(objId: Int, discoveredUrlsMap: Map[String, Lwm2mDMNode], objInstace: LwM2mObjectInstance): Map[String, Lwm2mDMNode] = {
@@ -125,7 +158,7 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
       val url = s"$objInstanceUrl/${resource.getId}"
       map + (url -> map.get(url)
         .map(_.copy(value = value.opt))
-        .getOrElse(Lwm2mDMNode(url, value.opt, Map.empty, objectsSpec.getDetails(url.lmPath))))
+        .getOrElse(Lwm2mDMNode(url, value.opt, Map.empty, objectsSpec.getDetails(url.lmPath), isObserved = false)))
     }
   }
 

@@ -33,9 +33,12 @@ trait Lwm2mDMNodeTemplate {
   def attributesSeq: Seq[(String, String)]
 
   def details: DMNodeDetails
+
+  def isObserved: Boolean
 }
 
-case class Lwm2mDMNode(path: String, value: Opt[String], attributes: Map[String, String], details: DMNodeDetails) extends Lwm2mDMNodeTemplate {
+case class Lwm2mDMNode(path: String, value: Opt[String], attributes: Map[String, String], details: DMNodeDetails,
+                       isObserved: Boolean) extends Lwm2mDMNodeTemplate {
   override def attributesSeq: Seq[(String, String)] = attributes.toSeq
 }
 
@@ -44,3 +47,5 @@ object ClientData {
 }
 
 case class ClientData(registration: RegisteredClient, datamodel: Vector[Lwm2mDMNode])
+
+case class NodeUpdate(path: String, isObserved: Opt[Boolean], value: Opt[String])

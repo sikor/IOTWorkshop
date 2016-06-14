@@ -1,6 +1,6 @@
 package com.avsystem.iot.workshop
 
-import io.udash._
+import io.udash.{StrictLogging, _}
 import io.udash.wrappers.jquery._
 import org.scalajs.dom.{Element, document}
 
@@ -17,7 +17,9 @@ object Context {
   import io.udash.rpc._
   import com.avsystem.iot.workshop.rpc._
 
-  val serverRpc = DefaultServerRPC[MainClientRPC, MainServerRPC](new MainClientRPCImpl)
+  val clientRpc: MainClientRPCImpl = new MainClientRPCImpl
+  val serverRpc = DefaultServerRPC[MainClientRPC, MainServerRPC](clientRpc)
+  val serverRpcWrapper = new ServerRPCWrapper(serverRpc, clientRpc)
 
 }
 

@@ -4,15 +4,16 @@ import com.avsystem.commons.misc.Opt
 import com.avsystem.iot.workshop.DeviceInstanceState
 import com.avsystem.iot.workshop.lwm2m.Lwm2mDMNodeTemplate
 import com.avsystem.iot.workshop.styles.GlobalStyles
-import io.udash.bindings.TextInput
+import io.udash._
+import io.udash.bindings.{Checkbox, TextInput}
 import io.udash.core.DefaultViewPresenterFactory
 import io.udash.properties.{ImmutableValue, ModelProperty, Property, SeqProperty}
-import io.udash.{properties, _}
 import org.scalajs
 import org.scalajs.dom.Element
+import org.scalajs.dom.html.Input
 
 import scala.util.{Failure, Success}
-import scalatags.JsDom
+import scalatags.JsDom.TypedTag
 
 case class DeviceInstanceViewPresenter(endpointName: String)
   extends DefaultViewPresenterFactory[DeviceInstanceState](() => new DeviceInstanceView(endpointName))
@@ -29,7 +30,22 @@ class DeviceInstanceView(endpointName: String) extends View {
   val clientData = serverRpc.getLwm2mRPC.retrieveClientData(endpointName)
   val statusProp = Property[String]("Retrieving data")
   val datamodelProp = SeqProperty[Lwm2mDMNodeTemplate](Seq())
-  val elementProperties: Seq[properties.CastableProperty[Lwm2mDMNodeTemplate]] = datamodelProp.elemProperties
+
+  serverRpcWrapper.listenForChanges(endpointName) { update =>
+    update.foreach { nodeUpdate =>
+      datamodelProp.elemProperties.foreach { row =>
+        val rowModel: ModelProperty[Lwm2mDMNodeTemplate] = row.asModel
+        if (rowModel.get.path == nodeUpdate.path) {
+          if (nodeUpdate.value.isDefined) {
+            rowModel.subProp(_.value).set(nodeUpdate.value)
+          }
+          if (nodeUpdate.isObserved.isDefined) {
+            rowModel.subProp(_.isObserved).set(nodeUpdate.isObserved.get)
+          }
+        }
+      }
+    }
+  }
 
 
   clientData.onComplete {
@@ -77,31 +93,47 @@ class DeviceInstanceView(endpointName: String) extends View {
     }
   )
 
+  private def observationForm(nodeModel: ModelProperty[Lwm2mDMNodeTemplate]) = td {
+    val node = nodeModel.get
+    if (node.details.operations.exists(_.exists(_ == 'R'))) {
+      nodeModel.subProp(_.isObserved).listen { value =>
+        if (value) {
+          serverRpc.getLwm2mRPC.observe(endpointName, node.path).onComplete {
+            case Success(_) => println(s"Observe success: $endpointName, ${node.path}")
+            case Failure(ex) => println(s"Observe failure: $endpointName, ${node.path}, $ex")
+          }
+        } else {
+          serverRpc.getLwm2mRPC.cancelObserve(endpointName, node.path).onComplete {
+            case Success(_) => println(s"Cancel Observe success: $endpointName, ${node.path}")
+            case Failure(ex) => println(s"Cancel Observe failure: $endpointName, ${node.path}, $ex")
+          }
+        }
+      }
+      val checkbox: TypedTag[Input] = Checkbox(nodeModel.subProp(_.isObserved))
+      div(checkbox)
+    } else {
+      " - "
+    }
+  }
+
   private val content = div(
     h2(s"Device: $endpointName"),
     p(bind(statusProp)),
     table(GlobalStyles.table)(
-      thead(tr(td("Path"), td("Value"), td("Type"), td("Operations"), td("Attributes"))),
+      thead(tr(td("Path"), td("Value"), td("Type"), td("Operations"), td("Is Observed"))),
       tbody(repeat(datamodelProp) { nodeProp =>
         val nodeModel: ModelProperty[Lwm2mDMNodeTemplate] = nodeProp.asModel
         val node = nodeModel.get
         tr(
           td(nested(node.path))(node.details.name.map(name => s"$name (${node.path})").getOrElse(node.path).toString),
-          td(valueForm(nodeModel)),
+          valueForm(nodeModel),
           td(node.details.`type`.getOrElse("").toString),
           td(node.details.operations.getOrElse("").toString),
-          td(attributesTag(node))
+          observationForm(nodeModel)
         ).render
       }))
   ).render
 
-  private def attributesTag(node: Lwm2mDMNodeTemplate): JsDom.StringFrag = {
-    if (node.attributesSeq.isEmpty) {
-      ""
-    } else {
-      node.attributesSeq.toString
-    }
-  }
 
   override def getTemplate: Element = content
 

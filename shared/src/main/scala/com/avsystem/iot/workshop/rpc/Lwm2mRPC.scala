@@ -12,4 +12,12 @@ trait Lwm2mRPC {
   def retrieveClientData(endpointName: String): Future[ClientData]
 
   def write(endpointName: String, path: String, value: String): Future[Unit]
+
+  def observe(endpointName: String, path: String): Future[Unit]
+
+  def cancelObserve(endpointName: String, path: String): Future[Unit]
+
+  def listenForChanges(endpointName: String): Future[Unit]
+
+  def cancelListener(endpointName: String): Future[Unit]
 }
