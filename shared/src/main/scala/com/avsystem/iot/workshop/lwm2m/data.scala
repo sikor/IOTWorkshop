@@ -28,7 +28,7 @@ object Lwm2mDMNode {
 trait Lwm2mDMNodeTemplate {
   def path: String
 
-  def value: Opt[String]
+  def value: String
 
   def attributesSeq: Seq[(String, String)]
 
@@ -37,7 +37,7 @@ trait Lwm2mDMNodeTemplate {
   def isObserved: Boolean
 }
 
-case class Lwm2mDMNode(path: String, value: Opt[String], attributes: Map[String, String], details: DMNodeDetails,
+case class Lwm2mDMNode(path: String, value: String, attributes: Map[String, String], details: DMNodeDetails,
                        isObserved: Boolean) extends Lwm2mDMNodeTemplate {
   override def attributesSeq: Seq[(String, String)] = attributes.toSeq
 }

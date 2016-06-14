@@ -37,8 +37,8 @@ class DeviceInstanceView(endpointName: String) extends View {
         val rowModel: ModelProperty[Lwm2mDMNodeTemplate] = row.asModel
         if (rowModel.get.path == nodeUpdate.path) {
           if (nodeUpdate.value.isDefined) {
-            if (rowModel.get.value.getOrElse("") != nodeUpdate.value.get) {
-              rowModel.subProp(_.value).set(nodeUpdate.value)
+            if (rowModel.get.value != nodeUpdate.value.get) {
+              rowModel.subProp(_.value).set(nodeUpdate.value.get)
             }
           }
           if (nodeUpdate.isObserved.isDefined) {
@@ -80,11 +80,11 @@ class DeviceInstanceView(endpointName: String) extends View {
         val valueProp = nodeModel.subProp(_.value)
         div(
           node.details.`type`.getOrElse("string") match {
-            case _ => TextInput(valueProp.transform(_.getOrElse(""), Opt(_)))
+            case _ => TextInput(valueProp)
           },
           unitString,
           button(onclick :+= { ev: scalajs.dom.Event =>
-            serverRpc.getLwm2mRPC.write(endpointName, node.path, valueProp.get.getOrElse("")).onComplete {
+            serverRpc.getLwm2mRPC.write(endpointName, node.path, valueProp.get).onComplete {
               case Success(_) => println(s"value set: ${valueProp.get}")
               case Failure(ex) => println(s"Failed to set value: $ex")
             }
@@ -92,7 +92,7 @@ class DeviceInstanceView(endpointName: String) extends View {
           })("set")
         )
       } else {
-        node.value.getOrElse("").toString + unitString
+        node.value.toString + unitString
       }
     }
   )

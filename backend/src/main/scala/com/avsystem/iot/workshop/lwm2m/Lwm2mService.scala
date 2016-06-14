@@ -81,7 +81,7 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
           val objUrl: String = s"/$objId"
           for {
             discoverResponse <- server.sendFut(client, new DiscoverRequest(objUrl))
-            discoveredUrlsMap = discoverResponse.getObjectLinks.map(ol => (ol.getUrl, Lwm2mDMNode(ol.getUrl, Opt.Empty,
+            discoveredUrlsMap = discoverResponse.getObjectLinks.map(ol => (ol.getUrl, Lwm2mDMNode(ol.getUrl, "",
               ol.getAttributes.asScala.mapValues(_.toString).toMap, objectsSpec.getDetails(ol.getUrl.lmPath), observationsMap.contains(ol.getUrl)))).toMap
             _ = Logger.trace("Discover urls: " + discoveredUrlsMap.values.toString)
             readValueResponse <- server.sendFut(client, new ReadRequest(objUrl))
@@ -155,14 +155,14 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
     val objInstanceUrl: String = s"/$objId/${objInstace.getId}"
     objInstace.getResources.asScala.values.foldLeft(discoveredUrlsMap) { (map, resource) =>
       val value = if (resource.isMultiInstances) {
-        resource.getValues.values().asScala.toString
+        resource.getValues.values().asScala.toVector.toString
       } else {
         resource.getValue.toString
       }
       val url = s"$objInstanceUrl/${resource.getId}"
       map + (url -> map.get(url)
-        .map(_.copy(value = value.opt))
-        .getOrElse(Lwm2mDMNode(url, value.opt, Map.empty, objectsSpec.getDetails(url.lmPath), isObserved = false)))
+        .map(_.copy(value = value))
+        .getOrElse(Lwm2mDMNode(url, value, Map.empty, objectsSpec.getDetails(url.lmPath), isObserved = false)))
     }
   }
 
