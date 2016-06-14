@@ -1,3 +1,6 @@
+import sbt.Package.ManifestAttributes
+import sbtassembly.AssemblyPlugin.autoImport._
+
 name := "IOTWorkshop"
 
 version in ThisBuild := "0.1.0-SNAPSHOT"
@@ -22,6 +25,32 @@ javacOptions in ThisBuild := Seq(
   "-parameters"
 )
 
+mainClass in Compile := Some("com.avsystem.iot.workshop.Launcher")
+assemblyJarName in assembly := "iotworkshop.jar"
+test in assembly := {}
+mainClass in assembly := Some("com.avsystem.iot.workshop.Launcher")
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+  case _ => MergeStrategy.first
+}
+//packageOptions in assembly := Seq(ManifestAttributes(("Main-Class", "test"), ("Built-By", "team"), ("Implementation-Title", "console"), ("Implementation-Version", "1.0")))
+
+val commonSettings = Seq[SettingsDefinition](
+  mainClass in Compile := Some("com.avsystem.iot.workshop.Launcher"),
+  assemblyJarName in assembly := "iotworkshop.jar",
+  test in assembly := {},
+  mainClass in assembly := Some("com.avsystem.iot.workshop.Launcher"),
+  assemblyMergeStrategy in assembly := {
+    case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+    case _ => MergeStrategy.first
+  },
+  assemblyShadeRules in assembly := Seq(
+    //    ShadeRule.zap("META-INF**.SF", "META-INF**.DSA", "META-INF**.RSA").inAll
+  ),
+  dependencyOverrides ++= standardDependencyOverrides.toSet
+
+)
+
 def crossLibs(configuration: Configuration) =
   libraryDependencies ++= crossDeps.value.map(_ % configuration)
 
@@ -29,9 +58,8 @@ lazy val IOTWorkshop = project.in(file("."))
   .aggregate(sharedJS, sharedJVM, frontend, backend)
   .dependsOn(backend)
   .settings(
-    publishArtifact := false,
-    mainClass in Compile := Some("com.avsystem.iot.workshop.Launcher")
-  )
+    publishArtifact := false
+  ).settings(commonSettings: _*)
 
 lazy val shared = crossProject.crossType(CrossType.Pure).in(file("shared"))
   .settings(
@@ -60,7 +88,7 @@ lazy val backend = project.in(file("backend"))
     },
 
     watchSources ++= (sourceDirectory in frontend).value.***.get
-  )
+  ).settings(commonSettings: _*)
 
 lazy val frontend = project.in(file("frontend")).enablePlugins(ScalaJSPlugin)
   .dependsOn(sharedJS)

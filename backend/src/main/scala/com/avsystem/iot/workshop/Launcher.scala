@@ -39,7 +39,13 @@ object Launcher {
 
   def main(args: Array[String]): Unit = {
     val clientsRegistry = new ActiveClientsRegistry
-    val lwm2mService = new Lwm2mService("localhost", 5683)
+    var address: String = "localhost"
+    var port: Int = 5683
+    if (args.length == 2) {
+      address = args(0)
+      port = args(1).toInt
+    }
+    val lwm2mService = new Lwm2mService(address, port)
     val server = new ApplicationServer(8080, "backend/target/UdashStatic/WebContent",
       implicit clientId => new MainServerRPCImpl(lwm2mService, clientsRegistry))
     server.start()

@@ -4,11 +4,11 @@ import sbt._
 object Dependencies extends Build {
   val udashVersion = "0.2.0"
   val udashJQueryVersion = "1.0.0"
-  val logbackVersion = "1.1.3"
+  val logbackVersion = "1.1.4"
   val jettyVersion = "9.3.8.v20160314"
   val avsCommonsVersion = "1.10.6"
   val guavaVersion = "18.0"
-  val slf4jVersion = "1.7.12"
+  val slf4jVersion = "1.7.16"
   val scalatestVersion = "2.2.5"
 
   val leshanDeps = Seq(
@@ -19,7 +19,7 @@ object Dependencies extends Build {
 
   val otherDeps = Seq(
     "com.google.guava" % "guava" % guavaVersion,
-    "com.google.code.findbugs" % "jsr305" % "1.3.+"
+    "com.google.code.findbugs" % "jsr305" % "3.0.+"
   )
 
   val crossDeps = Def.setting(Seq[ModuleID](
@@ -40,7 +40,6 @@ object Dependencies extends Build {
 
   val backendDeps = Def.setting(Seq[ModuleID](
     "ch.qos.logback" % "logback-classic" % logbackVersion,
-    "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.eclipse.jetty" % "jetty-server" % jettyVersion,
     "org.eclipse.jetty" % "jetty-servlet" % jettyVersion,
     "io.udash" %% "udash-rpc-backend" % udashVersion,
@@ -48,5 +47,9 @@ object Dependencies extends Build {
     "org.scalatest" %% "scalatest" % scalatestVersion % Test
   ) ++ leshanDeps ++ otherDeps)
 
+  val standardDependencyOverrides = Seq(
+    "org.slf4j" % "slf4j-api" % slf4jVersion,
+    "ch.qos.logback" % "logback-classic" % logbackVersion
+  )
 
 }
