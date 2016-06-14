@@ -31,7 +31,7 @@ class LedView extends View {
     div(p("Path"), TextInput(ledDefForm.subProp(_.path))),
     div(p("on value"), TextInput(ledDefForm.subProp(_.onValue))),
     div(p("off value"), TextInput(ledDefForm.subProp(_.offValue))),
-    div(p("endpoints (comma separated)"), TextInput(ledDefForm.subProp(_.ordering))),
+    div(p("endpoints (comma separated)"), TextArea(ledDefForm.subProp(_.ordering), cols := 100, rows := 10)),
     div(p("interval millis"), NumberInput(ledDefForm.subProp(_.intervalMillis).transform(_.toString, _.toInt))),
     div(button(onclick :+= { ev: org.scalajs.dom.Event =>
       val values = ledDefForm.get
