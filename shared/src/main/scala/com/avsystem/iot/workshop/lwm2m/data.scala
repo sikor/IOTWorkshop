@@ -49,3 +49,22 @@ object ClientData {
 case class ClientData(registration: RegisteredClient, datamodel: Vector[Lwm2mDMNode])
 
 case class NodeUpdate(path: String, isObserved: Opt[Boolean], value: Opt[String])
+
+trait LedDemoDef {
+  def ordering: String
+
+  def intervalMillis: Int
+
+  def path: String
+
+  def onValue: String
+
+  def offValue: String
+}
+
+object LedDemoDefImpl {
+  implicit val Codec: GenCodec[LedDemoDefImpl] = GenCodec.materialize[LedDemoDefImpl]
+
+}
+
+case class LedDemoDefImpl(ordering: String, intervalMillis: Int, path: String, onValue: String, offValue: String)

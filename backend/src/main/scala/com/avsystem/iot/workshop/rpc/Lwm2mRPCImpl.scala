@@ -4,7 +4,7 @@ package rpc
 import com.avsystem.commons.concurrent.RunInQueueEC
 import com.avsystem.iot.workshop.Launcher.ActiveClientsRegistry
 import com.avsystem.iot.workshop.lwm2m.ChangesManager.Listener
-import com.avsystem.iot.workshop.lwm2m.{ClientData, Lwm2mService, NodeUpdate, RegisteredClient}
+import com.avsystem.iot.workshop.lwm2m._
 import com.avsystem.iot.workshop.rpc.Lwm2mRPCImpl.ListenerToken
 import io.udash.rpc.ClientId
 
@@ -54,5 +54,9 @@ class Lwm2mRPCImpl(private val lwm2mService: Lwm2mService, private val clientId:
   override def cancelListener(endpointName: String): Future[Unit] = {
     lwm2mService.cancelListener(ListenerToken(endpointName, clientId)(clientsRegistry))
     Future.successful(())
+  }
+
+  override def ledDemo(definition: LedDemoDefImpl): Future[Unit] = {
+    lwm2mService.ledDemo(definition)
   }
 }

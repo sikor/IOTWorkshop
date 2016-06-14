@@ -112,9 +112,7 @@ class ChangesManager(private val server: LwM2mServer) extends ObservationRegistr
     Logger.debug(s"Observation changed: ${observation.getPath}, $value")
     withListeners(observation) { listeners =>
       val update = NodeUpdate(observation.getPath.toString, value.opt, Opt.Empty)
-      listeners.foreach { listener =>
-        notifyListener(Vector(update), listener)
-      }
+      notifyListeners(listeners, Vector(update))
     }
   }
 

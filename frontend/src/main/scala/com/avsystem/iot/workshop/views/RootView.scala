@@ -1,7 +1,7 @@
 package com.avsystem.iot.workshop.views
 
 import io.udash._
-import com.avsystem.iot.workshop.{DevicesState, RootState, RoutingRegistryDef}
+import com.avsystem.iot.workshop.{DevicesState, LedDemoState, RootState, RoutingRegistryDef}
 import org.scalajs.dom.Element
 
 import scalatags.JsDom.tags2.main
@@ -24,7 +24,8 @@ class RootView extends View {
       div(GlobalStyles.body)(
         h1("IOT Workshop"),
         ul(
-          li(a(DemoStyles.underlineLinkBlack, href := DevicesState.url)("Devices list"))
+          li(a(DemoStyles.underlineLinkBlack, href := DevicesState.url)("Devices list")),
+          li(a(DemoStyles.underlineLinkBlack, href := LedDemoState.url)("LED demo"))
         ),
         child
       )

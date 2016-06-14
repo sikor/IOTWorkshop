@@ -13,6 +13,8 @@ case object DevicesState extends RoutingState(RootState)
 
 case class DeviceInstanceState(endpointName: String) extends RoutingState(RootState)
 
+case object LedDemoState extends RoutingState(RootState)
+
 case object ErrorState extends RoutingState(RootState)
 
 case object IndexState extends RoutingState(RootState)
@@ -39,6 +41,7 @@ object RoutingRegistryDef extends RoutingRegistry[RoutingState] {
   private val (url2State, state2Url) = Bidirectional[String, RoutingState] {
     case "" => DevicesState
     case "/device" /:/ endpointName => DeviceInstanceState(endpointName)
+    case "/led" => LedDemoState
     case "/binding" => BindingDemoState("")
     case "/binding" /:/ arg => BindingDemoState(arg)
     case "/rpc" => RPCDemoState
@@ -56,6 +59,7 @@ object StatesToViewPresenterDef extends ViewPresenterRegistry[RoutingState] {
     case RPCDemoState => RPCDemoViewPresenter
     case DemoStylesState => DemoStylesViewPresenter
     case DevicesState => DevicesViewPresenter
+    case LedDemoState => LedViewPresenter
     case DeviceInstanceState(epName) => new DeviceInstanceViewPresenter(epName)
     case _ => ErrorViewPresenter
   }

@@ -37,10 +37,14 @@ class DeviceInstanceView(endpointName: String) extends View {
         val rowModel: ModelProperty[Lwm2mDMNodeTemplate] = row.asModel
         if (rowModel.get.path == nodeUpdate.path) {
           if (nodeUpdate.value.isDefined) {
-            rowModel.subProp(_.value).set(nodeUpdate.value)
+            if (rowModel.get.value.getOrElse("") != nodeUpdate.value.get) {
+              rowModel.subProp(_.value).set(nodeUpdate.value)
+            }
           }
           if (nodeUpdate.isObserved.isDefined) {
-            rowModel.subProp(_.isObserved).set(nodeUpdate.isObserved.get)
+            if (rowModel.get.isObserved != nodeUpdate.isObserved.get) {
+              rowModel.subProp(_.isObserved).set(nodeUpdate.isObserved.get)
+            }
           }
         }
       }
@@ -96,21 +100,25 @@ class DeviceInstanceView(endpointName: String) extends View {
   private def observationForm(nodeModel: ModelProperty[Lwm2mDMNodeTemplate]) = td {
     val node = nodeModel.get
     if (node.details.operations.exists(_.exists(_ == 'R'))) {
-      nodeModel.subProp(_.isObserved).listen { value =>
-        if (value) {
+      div(
+        bind(nodeModel.subProp(_.isObserved)),
+        button(onclick :+= { ev: org.scalajs.dom.Event =>
           serverRpc.getLwm2mRPC.observe(endpointName, node.path).onComplete {
             case Success(_) => println(s"Observe success: $endpointName, ${node.path}")
+              nodeModel.subProp(_.isObserved).set(true)
             case Failure(ex) => println(s"Observe failure: $endpointName, ${node.path}, $ex")
           }
-        } else {
+          true
+        })("start"),
+        button(onclick :+= { ev: org.scalajs.dom.Event =>
           serverRpc.getLwm2mRPC.cancelObserve(endpointName, node.path).onComplete {
             case Success(_) => println(s"Cancel Observe success: $endpointName, ${node.path}")
+              nodeModel.subProp(_.isObserved).set(false)
             case Failure(ex) => println(s"Cancel Observe failure: $endpointName, ${node.path}, $ex")
           }
-        }
-      }
-      val checkbox: TypedTag[Input] = Checkbox(nodeModel.subProp(_.isObserved))
-      div(checkbox)
+          true
+        })("stop")
+      )
     } else {
       " - "
     }

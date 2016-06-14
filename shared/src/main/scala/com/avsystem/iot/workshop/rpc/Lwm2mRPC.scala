@@ -1,7 +1,7 @@
 package com.avsystem.iot.workshop.rpc
 
 import com.avsystem.commons.rpc.RPC
-import com.avsystem.iot.workshop.lwm2m.{ClientData, RegisteredClient}
+import com.avsystem.iot.workshop.lwm2m.{ClientData, LedDemoDefImpl, RegisteredClient}
 
 import scala.concurrent.Future
 
@@ -20,4 +20,6 @@ trait Lwm2mRPC {
   def listenForChanges(endpointName: String): Future[Unit]
 
   def cancelListener(endpointName: String): Future[Unit]
+
+  def ledDemo(definition: LedDemoDefImpl): Future[Unit]
 }

@@ -3,6 +3,7 @@ package lwm2m
 
 import java.nio.charset.Charset
 import java.util.Date
+import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
 
 import com.avsystem.commons.concurrent.RunInQueueEC
 import com.avsystem.commons.jiop.BasicJavaInterop._
@@ -18,6 +19,7 @@ import org.eclipse.leshan.server.californium.impl.LeshanServer
 import org.eclipse.leshan.server.client.Client
 import org.slf4j.LoggerFactory
 
+import scala.annotation.tailrec
 import scala.concurrent.{Future, Promise}
 
 object Lwm2mService {
@@ -59,6 +61,8 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
   server.start()
   val changesManager = new ChangesManager(server)
   Logger.info(s"Lwm2m Service started: $this")
+
+  private val scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1);
 
   def retrieveAllRegisteredClients(): Vector[RegisteredClient] = {
     Logger.debug("retrieving all registered clients")
@@ -173,6 +177,37 @@ class Lwm2mService(val bindHostname: String, val bindPort: Int) {
       case "time" => LwM2mSingleResource.newDateResource(id, new Date(value.toLong))
       case "opaque" => LwM2mSingleResource.newBinaryResource(id, value.getBytes(Charset.forName("UTF-8")))
     }
+  }
+
+  def ledDemo(definition: LedDemoDefImpl): Future[Unit] = {
+    val ordering = definition.ordering.split(',').map { endpointName =>
+      val ep = endpointName.trim
+      server.getClientRegistry.get(ep).opt.getOrElse {
+        throw new IllegalArgumentException(s"Endpoint does not exists: $ep")
+      }
+      ep
+    }
+    val it = ordering.iterator
+    @tailrec
+    def run(previous: Future[Unit], iterator: Iterator[String]): Future[Unit] = {
+      if (iterator.hasNext) {
+        val client = iterator.next()
+        val onFut = write(client, definition.path.lmPath, definition.onValue)
+        run(onFut.flatMap { _ =>
+          val next = Promise[Unit]
+          scheduler.schedule(new Runnable {
+            override def run(): Unit = {
+              next.completeWith(write(client, definition.path.lmPath, definition.offValue))
+            }
+          }, definition.intervalMillis, TimeUnit.MILLISECONDS)
+          next.future
+        }, iterator)
+      } else {
+        previous
+      }
+    }
+    Logger.info(s"Running demo: $definition")
+    run(Future.successful(()), it)
   }
 
   def destroy(): Unit = {

@@ -17,6 +17,8 @@ object LmPathUtils {
 
     def toUrl: String = path
 
+
+    override def toString: String = s"LmPath($path)"
   }
 
   implicit class Ops(private val st: String) extends AnyVal {
