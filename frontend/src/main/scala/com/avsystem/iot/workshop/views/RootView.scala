@@ -1,10 +1,12 @@
 package com.avsystem.iot.workshop.views
 
 import io.udash._
-import com.avsystem.iot.workshop.RootState
+import com.avsystem.iot.workshop.{DevicesState, RootState, RoutingRegistryDef}
 import org.scalajs.dom.Element
+
 import scalatags.JsDom.tags2.main
 import com.avsystem.iot.workshop.styles.{DemoStyles, GlobalStyles}
+
 import scalacss.ScalatagsCss._
 
 object RootViewPresenter extends DefaultViewPresenterFactory[RootState.type](() => new RootView)
@@ -13,6 +15,7 @@ class RootView extends View {
 
   import com.avsystem.iot.workshop.Context._
   import scalatags.JsDom.all._
+  import RoutingRegistryDef._
 
   private var child: Element = div().render
 
@@ -20,6 +23,9 @@ class RootView extends View {
     main(GlobalStyles.main)(
       div(GlobalStyles.body)(
         h1("IOT Workshop"),
+        ul(
+          li(a(DemoStyles.underlineLinkBlack, href := DevicesState.url)("Devices list"))
+        ),
         child
       )
     )
